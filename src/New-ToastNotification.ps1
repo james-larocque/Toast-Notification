@@ -156,7 +156,7 @@ function Test-PendingRebootRegistry() {
     $WURebootKey = Get-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired" -ErrorAction Ignore
     $FileRebootKey = Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" -Name PendingFileRenameOperations -ErrorAction Ignore
     
-    if (($CBSRebootKey -ne $null) -OR ($WURebootKey -ne $null) -OR ($FileRebootKey -ne $null)) {
+    if (($null -ne $CBSRebootKey) -OR ($null -ne $WURebootKey) -OR ($null -ne $FileRebootKey)) {
         Write-Log -Message "Check returned TRUE on ANY of the registry checks: Reboot is pending!"
         return $true
     }
@@ -171,7 +171,7 @@ function Test-PendingRebootWMI() {
         Write-Log -Message "Computer has ConfigMgr client installed - checking for pending reboots in WMI"
         $Util = [wmiclass]"\\.\root\ccm\clientsdk:CCM_ClientUtilities"
         $Status = $Util.DetermineIfRebootPending()
-        if (($Status -ne $null) -AND $Status.RebootPending) {
+        if (($null -ne $Status) -AND $Status.RebootPending) {
             Write-Log -Message "Check returned TRUE on checking WMI for pending reboot: Reboot is pending!"
             return $true
         }
@@ -216,7 +216,7 @@ function Get-GivenName() {
         Write-Log -Message "Given name not found in AD or no local AD available. Continuing looking for given name elsewhere"
         if (Get-Service -Name ccmexec -ErrorAction SilentlyContinue) {
             Write-Log -Message "Looking for given name in WMI with CCM client"
-            $LoggedOnSID = Get-CimInstance -Namespace ROOT\CCM -Class CCM_UserLogonEvents -Filter "LogoffTime=null" | Select -ExpandProperty UserSID
+            $LoggedOnSID = Get-CimInstance -Namespace ROOT\CCM -Class CCM_UserLogonEvents -Filter "LogoffTime=null" | Select-Object -ExpandProperty UserSID
             if ($LoggedOnSID.GetType().IsArray) {
                 Write-Log -Message "Multiple SID's found. Skipping"
                 $GivenName = ""
